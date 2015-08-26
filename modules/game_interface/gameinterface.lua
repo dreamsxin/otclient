@@ -27,6 +27,15 @@ function init()
     onLoginAdvice = onLoginAdvice,
   }, true)
 
+  -- Call load AFTER game window has been created and 
+  -- resized to a stable state, otherwise the saved 
+  -- settings can get overridden by false onGeometryChange
+  -- events
+  connect(g_app, {
+    onRun = load,
+    onExit = save
+  })
+  
   gameRootPanel = g_ui.displayUI('gameinterface')
   gameRootPanel:hide()
   gameRootPanel:lower()
@@ -49,7 +58,6 @@ function init()
   setupViewMode(0)
 
   bindKeys()
-  load()
 
   if g_game.isOnline() then
     show()
@@ -102,7 +110,6 @@ function unbindWalkKey(key)
 end
 
 function terminate()
-  save()
   hide()
 
   hookedMenuOptions = {}
@@ -442,7 +449,10 @@ end
 
 function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
   if not g_game.isOnline() then return end
+
   local menu = g_ui.createWidget('PopupMenu')
+  menu:setGameMenu(true)
+
   local classic = modules.client_options.getOption('classicControl')
   local shortcut = nil
 
